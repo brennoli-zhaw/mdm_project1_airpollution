@@ -6,28 +6,12 @@ from concurrent.futures import ProcessPoolExecutor
 from pymongo import MongoClient
 
 from pathlib import Path
+import subprocess
+
 
 def to_document(base_dir, item):
     try:
-        file_item = item["files"][0]
-        # file_path = os.path.join(base_dir, "downloads", file_item['path'])
-        file_path = Path(base_dir, "downloads", file_item['path'])
-        file = open(file_path, encoding='UTF-8')
-        #anpassen gpx wird nicht mehr verwendet.
-        gpx = gpxpy.parse(file)
-        doc = {
-            # "gpx": gpx.to_xml(),
-            "min_elevation": gpx.get_elevation_extremes()[0],            
-            "max_elevation": gpx.get_elevation_extremes()[1],
-            "uphill": gpx.get_uphill_downhill()[0],            
-            "downhill": gpx.get_uphill_downhill()[1],
-            "max_speed": gpx.get_moving_data().max_speed,                        
-            "length_2d": gpx.length_2d(),                     
-            "length_3d": gpx.length_3d(),
-            "moving_time": gpx.get_moving_data().moving_time,
-            "difficulty": item["difficulty"]
-        }
-        return doc
+        return item
             
     except Exception as e:
         print("Could not read {}".format(item["files"][0]), e)
@@ -57,6 +41,8 @@ class JsonLinesImporter:
     def save_to_mongodb(self):
         db = self.client[self.db]
         collection = db[self.collection]
+        #only "live" data is relevant 
+        collection.delete_many({})
         for idx, batch in enumerate(self.read_lines()):
             print("inserting batch", idx)
             collection.insert_many(self.prepare_documents(batch))

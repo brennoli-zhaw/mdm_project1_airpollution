@@ -61,9 +61,8 @@ class StationsSpider(scrapy.Spider):
 
     def getGeoByAPITypeTwo(self, response, data=None):
         link = response.css("a#iosurl").attrib['href']
-        self.logger.warning(link)
         if(link.find('?') == -1):
-            self.logger.warning(link)
+            self.logger.error("Error with Json structure: type two " + link)
             data['geo'] = 'error : type two ' + link
             yield data
         else:
@@ -73,8 +72,15 @@ class StationsSpider(scrapy.Spider):
             data['data-point'] = newLink
             #headers are needed, otherwise only parts of the json file will be responded
             customHeaders = {
-                "Sec-Ch-Ua-Platform": "\"Linux\"",
-                "User-Agent": "Mozilla/5.0 (Linux; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                'Accept-Encoding': 'gzip, deflate, br, zstd',
+                'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Cache-Control': 'no-cache',
+                'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+                'Sec-Ch-Ua-Platform': '"Windows"',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                
+                
             }
             yield response.follow(newLink, self.getGeoDataByApiFeed, cb_kwargs={'data':data}, headers=customHeaders)
 
