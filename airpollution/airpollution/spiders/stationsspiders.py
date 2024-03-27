@@ -1,3 +1,4 @@
+#scrapy crawl stations -s CLOSESPIDER_PAGECOUNT=100 -O file.jl
 import scrapy
 import json
 

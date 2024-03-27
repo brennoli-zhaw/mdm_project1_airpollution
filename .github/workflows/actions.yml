@@ -23,7 +23,13 @@ jobs:
           
       - name: scrape airpollution data 
         working-directory: ./airpollution/airpollution/spiders
-        run: scrapy crawl stations -O file.jl
+        #tests
+        run: scrapy crawl stations -s CLOSESPIDER_PAGECOUNT=100 -O file.jl
+        #production
+        #run: scrapy crawl stations -O file.jl
+
+        
+
 
       - name: upload data to mongodb
         working-directory: ./airpollution/mongo_db
