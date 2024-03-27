@@ -1,0 +1,38 @@
+name: Scrape Data, build and upload Model
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: checkout repo content
+        uses: actions/checkout@v3 # checkout the repository content to github runner
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.1' # install the python version needed
+          cache: 'pip'
+          
+      - name: install python packages
+        run: pip install -r requirements.txt
+          
+      - name: scrape airpollution data 
+        working-directory: ./airpollution/airpollution/spiders
+        run: scrapy crawl stations -O file.jl
+
+      - name: upload data to mongodb
+        working-directory: ./airpollution/mongo_db
+        run: python .\importer.py -c airpollutionStations -i ../airpollution/spiders/file.jl -u "${{secrets.MONGODB_URI}}"
+
+      - name: build model
+        working-directory: ./airpollution/model
+        run: python ./model.py -u "${{secrets.MONGODB_URI}}"
+
+      - name: upload model
+        working-directory: ./airpollution/model
+        run: python ./save.py -c "${{secrets.AZURE_STORAGE_CONNECTION_STRING}}"

@@ -1,0 +1,115 @@
+:root{
+    --good: #00ff00;
+    --moderate: #ffa500;
+    --unhealthy-for-sensitve-groups: #ff4500;
+    --unhealthy: #ff1500;
+    --very-unhealthy: #9d0000;
+    --hazardous: black;
+}
+
+body{
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#map{
+    width: 100%;
+    max-height: 50vh;
+    aspect-ratio: 16 / 9;
+    position: relative;
+}
+
+#map::after{
+    content: "+";
+    -webkit-text-stroke: 1px #000;
+    /*text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000;*/
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 30px;
+    font-weight: 700;
+    transform: translate(-50%,-50%);
+    z-index: 99999999;
+}
+
+.flex-bottom{
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    flex-direction: column;
+}
+
+.good #map::after{
+    color: var(--good);
+}
+
+.moderate #map::after{
+    color: var(--moderate);
+}
+
+.unhealthy-for-sensitve-groups #prediction #map::after{
+    color: var(--unhealthy-for-sensitve-groups);
+}
+
+.unhealthy #prediction #map::after{
+    color: var(--unhealthy);
+}
+
+.very-unhealthy #map::after{
+    color: var(--very-unhealthy);
+}
+
+.good #prediction{
+    background-color: var(--good);
+    color: black;
+}
+
+.moderate #prediction{
+    background-color: var(--moderate);
+}
+
+.unhealthy-for-sensitve-groups #prediction{
+    background-color: var(--unhealthy-for-sensitve-groups);
+    color: #fff;
+}
+
+.unhealthy #prediction{
+    background-color: var(--unhealthy);
+    color: #fff;
+}
+
+.very-unhealthy #prediction{
+    background-color: var(--very-unhealthy);
+    color: #fff;
+}
+
+.hazardous #prediction{
+    background-color: var(--hazardous);
+    color: #fff;
+}
+
+#prediction{
+    min-height: 100px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-size: 20px;
+    font-weight: 700;
+    transition: 250ms ease-in-out;
+}
+
+#prediction span{
+    font-size: 16px;
+    font-weight: 400;
+}
+
+label {
+    font-weight: 700;
+}
