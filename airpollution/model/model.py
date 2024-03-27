@@ -73,7 +73,7 @@ new_lng = new_geo[1]
 new_point = [(new_lat, new_lng)]
 
 scorePrediction = scoreKNN.predict(new_point)
-print(f'https://api.waqi.info/feed/geo:{new_lat};{new_lng}/?token=6209ace39368f2a7b8e4aedd47087ac650dc4b04')
+print(f'https://api.waqi.info/feed/geo:{new_lat};{new_lng}/?token=<your_token>')
 print(scorePrediction)
 
 def categorize(x):
