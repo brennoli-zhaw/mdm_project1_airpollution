@@ -24,9 +24,9 @@ jobs:
       - name: scrape airpollution data 
         working-directory: ./airpollution/airpollution/spiders
         #tests
-        run: scrapy crawl stations -s CLOSESPIDER_PAGECOUNT=100 -O file.jl
+        #run: scrapy crawl stations -s CLOSESPIDER_PAGECOUNT=100 -O file.jl
         #production
-        #run: scrapy crawl stations -O file.jl
+        run: scrapy crawl stations -O file.jl
 
         
 

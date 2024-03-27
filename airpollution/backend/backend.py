@@ -15,10 +15,13 @@ from flask import Flask, jsonify, request, send_file
 #connectionString = os.getenv("azureConnectionString")
 def getModelByContainerName(containerName):
     # get modelDirpaths
+    modelDirPathString = "../model/"
     workingDirectory = os.getcwd()
     currentPath = os.path.dirname(os.path.realpath(__file__))
     os.chdir(currentPath)
-    os.chdir("../model/")
+    if not os.path.isdir(modelDirPathString):
+        os.mkdir(modelDirPathString)
+    os.chdir(modelDirPathString)
     modelDirPath = os.getcwd()
     #reset workingDirectory
     os.chdir(workingDirectory)
