@@ -1,2 +1,8 @@
 .venv
 *.code-workspace
+*.jl
+*.pkl
+*__pycache__
+*.env
+*terminal.txt
+.vscode
