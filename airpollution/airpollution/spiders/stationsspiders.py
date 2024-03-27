@@ -7,6 +7,15 @@ class StationsSpider(scrapy.Spider):
     start_urls = ['https://aqicn.org/map/switzerland/de/']
 
     def parse(self, response):
+        try:
+            countryHrefs = response.css('.country-list a::attr("href")').getall()
+            for countryHref in countryHrefs:
+                countryLink = "https://aqicn.org" + countryHref
+                yield response.follow(countryLink, callback=self.parse_stations)
+        except:
+            self.logger.error("Something went wrong")
+
+    def parse_stations(self, response):
         stations = response.css('#map-station-list>div')
         for station in stations:
             try:
@@ -28,14 +37,12 @@ class StationsSpider(scrapy.Spider):
                         stationID = idPart[0]
                         newLink = "https://airnet.waqi.info/airnet/feed/instant/" + stationID
                         data['data-point'] = newLink
-                        #yield {
-                        #    'json' : response.follow(newLink, self.getGeoByAPITypeOne)
-                        #}
                         yield response.follow(newLink, callback=self.getGeoByAPITypeOne, cb_kwargs={'data' : data}) 
                 else:
                     #type two needs some more scaping to get the station ID first than requests to a url in following structure https://api2.waqi.info/api/feed/{@stationId}/aqi.json
-                    yield response.follow(link, callback=self.getGeoByAPITypeTwo, cb_kwargs={'data' : data})
-
+                    #yield response.follow(link, callback=self.getGeoByAPITypeTwo, cb_kwargs={'data' : data})
+                    yield response.follow(link, callback=self.getGeoDataByInlineScript, cb_kwargs={'data' : data})
+                    
             except:
                 link = station.css('a').attrib['href']
                 yield {
@@ -49,8 +56,8 @@ class StationsSpider(scrapy.Spider):
         try:
             jsonresponse = json.loads(response.text)
             data['geo'] = {
-                'lat' : jsonresponse['meta']['geo'][0],
-                'lng' : jsonresponse['meta']['geo'][1]
+                'lat' : float(jsonresponse['meta']['geo'][0]),
+                'lng' : float(jsonresponse['meta']['geo'][1])
             }
             yield data
         except:
@@ -82,20 +89,37 @@ class StationsSpider(scrapy.Spider):
                 
                 
             }
-            yield response.follow(newLink, self.getGeoDataByApiFeed, cb_kwargs={'data':data}, headers=customHeaders)
-
+            yield response.follow(newLink, self.getGeoDataByApiFeed, cb_kwargs={'data':data})
+    #deprecated, this endpoint doesn't repsond enough information anymore
     def getGeoDataByApiFeed(self, response, data=None):
         try:
             jsonresponse = json.loads(response.text)
             geo = jsonresponse['rxs']['obs'][0]['msg']['city']['geo']
             data['geo'] = {
-                'lat' : geo[0],
-                'lng' : geo[1]
+                'lat' : float(geo[0]),
+                'lng' : float(geo[1])
             }
             yield data
         except:
             self.logger.error("Error with Json structure: type two " + response.text)
-            data['geo'] = 'error : json structure'
+            #try getting data from js
+            yield response.follow(data["link"], self.getGeoDataByInlineScript, cb_kwargs={'data':data})
+
+    def getGeoDataByInlineScript(self, response, data=None):
+        try:
+            if response.css("div#citydivouter") is not None:
+                scriptText = response.css("div#citydivouter script::text").get()
+                sciptSplitter = scriptText.split("try { setWidgetAqiGraphModel(")
+                sciptSplitter = sciptSplitter[1].split("); } catch(e) { }")
+                jsonpart = json.loads(sciptSplitter[0])
+                geo = jsonpart["city"]["geo"]
+                data['geo'] = {
+                    'lat' : float(geo[0]),
+                    'lng' : float(geo[1])
+                }
+                yield data
+        except:
+            data["geo"] = "error: we tried everything"
             yield data
         
     

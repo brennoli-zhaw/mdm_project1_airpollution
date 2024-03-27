@@ -5,9 +5,6 @@ from concurrent.futures import ProcessPoolExecutor
 
 from pymongo import MongoClient
 
-from pathlib import Path
-import subprocess
-
 
 def to_document(base_dir, item):
     try:

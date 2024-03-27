@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MdM - Project 1 - Airpollution</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+    crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/ol@v9.1.0/dist/ol.js"></script>
+    <script>
+        var Map                 = ol.Map;        //~ import Map from 'ol/Map.js';
+        var View                = ol.View;       //~ import View from 'ol/View.js';
+        var {easeIn, easeOut}   = ol.easing;     //~ import {easeIn, easeOut} from 'ol/easing.js';
+        var TileLayer           = ol.layer.Tile; //~ import TileLayer from 'ol/layer/Tile.js';
+        var proj                = ol.proj;       //~ import {fromLonLat} from 'ol/proj.js';
+        var OSM                 = ol.source.OSM; //~ import OSM from 'ol/source/OSM.js';
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v9.1.0/ol.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" async></script>
+</head>
+<body>
+    <div class="container pt-5 pb-4 flexcenter">
+        <div class="row">
+            <div class="col-12">
+                <h1>Airquality-Index Predicter</h1>
+            </div>
+        </div>
+    </div>
+    <section>
+        <div class="container pb-4 flexcenter">
+            <div class="row">
+                <div class="col-12">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="airpollution-predictor">
+        <div class="container mt-5 mb-4 flexcenter">
+            <div class="row form-group">
+                <div class="col-12 col-md-9">
+                    <h2>Instructions</h2>
+                    <p>Enter latitude and longitude or drag the map to get a prediction about the airquality of the given location.</p>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="lat">Latitude</label><br>
+                    <input class="form-control" onfocusout="updateMapCenter()" type="text" id="lat" name="lat" value="8.2198">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="lng">Longitude</label><br>
+                    <input class="form-control" onfocusout="updateMapCenter()" type="text" id="lng" name="lng" value="46.9925"><br><br>
+                </div>
+                <div class="col-12">
+                    <div id="prediction" class="">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="additional-infos">
+        <div class="container mt-5 mb-4 flexcenter">
+            <div class="row form-group">
+                <div class="col-12 col-md-9">
+                    <h2>Additional Infos</h2>
+                    <p>The Data used was collected beforehand and doesn't represent the present datetime. <br/>
+                    All Data is collected from: <a href="https://waqi.info/" target="_blank">waqi.info</a><br/>
+                    Predictions with a index of 0 are to be interpreted carefully. A value of 0 can be explained by no nearby airscanners.<br/>
+                    Additional infos about the meaning of the different indexes and classifications cann be fount <a href="https://aqicn.org/scale/" target="_blank">here</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
