@@ -7,6 +7,6 @@ COPY airpollution/frontend airpollution/frontend/
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 # Docker Run Command
-EXPOSE 5000
+EXPOSE 80
 ENV FLASK_APP=/usr/src/app/airpollution/backend/backend.py
-CMD [ "python", "-m" , "flask" , "run", "--host=0.0.0.0"]
+CMD [ "python", "-m" , "flask" , "run", "--host=0.0.0.0", "--port=80"]
