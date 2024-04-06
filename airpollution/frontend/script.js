@@ -20,7 +20,6 @@ view.animate({center: startCoordinates,duration:500});
 
 function toFixed(x){
     return Number.parseFloat(x).toFixed(4)
-    
 }
 
 function getModelPrediction(){
@@ -54,7 +53,14 @@ function getModelPrediction(){
     );
 }
 
+let isMoving = false; 
+
 function updateCoordinatesByMapEvent(e = -1){
+    if(isMoving) return;
+    isMoving = true;
+    setTimeout(function(){
+        isMoving = false;
+    }, 150);
     let coordinates = map.getView().getCenter()
     let latElement = document.getElementById("lat")
     let lngElement = document.getElementById("lng")
@@ -92,16 +98,18 @@ map.on('pointermove', function (e) {
     }
 });
 
+window.addEventListener("mousemove", function(e) {
+    if(e.buttons == 1) {
+        updateCoordinatesByMapEvent(e)
+    }
+});
+
+
 map.on('moveend', function(e) {
     updateCoordinatesByMapEvent(e)
 });
 
-window.addEventListener("mousemove", function(e) {
-    if(e.buttons == 1) {
-        updateCoordinatesByMapEvent(e)
-        
-    }
-});
+
 
 
 
