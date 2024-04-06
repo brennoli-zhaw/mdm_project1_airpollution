@@ -38,8 +38,13 @@
         </div>
     </section>
     <section class="airpollution-predictor">
-        <div class="container mt-5 mb-4 flexcenter">
+        <div class="container mt-2 flexcenter">
             <div class="row form-group">
+                <div class="col-12 mb-5">
+                    <div id="prediction" class="">
+
+                    </div>
+                </div>
                 <div class="col-12 col-md-9">
                     <h2>Instructions</h2>
                     <p>Enter latitude and longitude or drag the map to get a prediction about the airquality of the given location.</p>
@@ -52,11 +57,6 @@
                     <label for="lng">Longitude</label><br>
                     <input class="form-control" onfocusout="updateMapCenter()" type="text" id="lng" name="lng" value="46.9925"><br><br>
                 </div>
-                <div class="col-12">
-                    <div id="prediction" class="">
-
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -65,9 +65,9 @@
             <div class="row form-group">
                 <div class="col-12 col-md-9">
                     <h2>Additional Infos</h2>
-                    <p>The Data used was collected beforehand and doesn't represent the present datetime. <br/>
+                    <p>The Data used was collected beforehand and doesn't represent the present datetime, but is updated only once a day.<br/>
+                    The classification and index-score use different models, hence classifications can be different to the table given by aqicn.
                     All Data is collected from: <a href="https://waqi.info/" target="_blank">waqi.info</a><br/>
-                    Predictions with an index of 0 are to be interpreted carefully. A value of 0 can be explained by no nearby airscanners.<br/>
                     Additional infos about the meaning of the different indexes and classifications can be found <a href="https://aqicn.org/scale/" target="_blank">here</a></p>
                 </div>
             </div>

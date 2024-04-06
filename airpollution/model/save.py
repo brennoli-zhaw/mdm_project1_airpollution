@@ -63,8 +63,8 @@ try:
 
     # Create the BlobServiceClient object
     blob_service_client = BlobServiceClient.from_connection_string(args.connection)
-    createBlobContainer(blob_service_client, "category-knn.pkl", "category-knn")
-    createBlobContainer(blob_service_client, "score-knn.pkl", "score-knn")
+    createBlobContainer(blob_service_client, "category-model.pkl", containerName ="category-model")
+    createBlobContainer(blob_service_client, "score-model.pkl", containerName ="score-model")
     
 
 except Exception as ex:

@@ -2,6 +2,16 @@ import argparse
 import numbers
 from pymongo import MongoClient
 
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.svm import SVR
+from sklearn.neighbors import KNeighborsRegressor,KNeighborsClassifier
+from sklearn.metrics import mean_squared_error, r2_score
+
 parser = argparse.ArgumentParser(description='Create Model')
 parser.add_argument('-u', '--uri', required=True, help="mongodb uri with username/password")
 args = parser.parse_args()
@@ -47,22 +57,104 @@ filteredStations = countStations - len(cleanStations)
 print(f'filtered {filteredStations} out of {countStations} Stations')
 
 #model
-#Three lines to make our compiler able to draw:
-import sys
-import matplotlib
-matplotlib.use('Agg')
+def categorizeNumbers(x):
+    return categorize(x, "value")
 
-import matplotlib.pyplot as plt
-from sklearn.neighbors import KNeighborsClassifier
+def categorizeCategories(x):
+    return categorize(x, "key")
+
+def categorize(x, returnValue):
+    #classes according to https://waqi.info/
+    categories = {
+        "good" : 50,
+        "moderate" : 100,
+        "unhealthy-for-sensitve-groups" : 150,
+        "unhealthy" : 200,
+        "very-unhealthy" : 300
+    }
+    #chose first occuring category
+    for key, category in categories.items():
+        if x <= category:
+            if returnValue == "key":
+                return key
+            if returnValue == "value":
+                return x
+    
+    if returnValue == "key":
+        return "hazardous"
+    if returnValue == "value":
+        return 400
 
 lng = [lng["lng"] for lng in cleanStations]
 lat = [lat["lat"] for lat in cleanStations]
-scoreClasses = [score["score"] for score in cleanStations]
+scoreClasses = [int(score["score"]) for score in cleanStations]
+categoryClasses = list(map(categorizeNumbers, scoreClasses))
+dataX = list(zip(lat, lng))
 
+models = { 
+    "Linear Regression": LinearRegression(), 
+    "Random Forest Regression": RandomForestRegressor(), 
+    "Gradient Boosting Regression": GradientBoostingRegressor(), 
+    "SVR": SVR(), 
+    "KNR": KNeighborsRegressor(), 
+    "KNN": KNeighborsClassifier()
+}
+
+def modelScoreComparer(name, mse, r2, testSize, modelSelect, model):
+    if (modelSelect["bestMSE"] == -1 or modelSelect["bestMSE"] >= mse) and (modelSelect["bestR2"] == -1 or modelSelect["bestR2"] <= r2):
+        modelSelect["bestMSE"] = mse
+        modelSelect["bestR2"] = r2
+        modelSelect["modelName"] = name
+        modelSelect["testSize"] = testSize
+        modelSelect["model"] = model
+    return modelSelect
+
+def modelSelector(x,y, models, randomState=50, testSizeStart = 0.01, testSizeEnd = 0.9, steps = 0.01):
+    #do not allow to large testing data
+    if testSizeEnd > 0.95:
+        testSizeEnd = 0.95
+    bestModel = {"modelName" : "", "bestMSE" : -1, "bestR2" : -1, "testSize": testSizeStart, "model" : -1}
+    while testSizeStart <= testSizeEnd:
+        bestModel = modelTypeComparer(x,y, models, testSize=testSizeStart, randomState=randomState, modelSelect=bestModel)
+        testSizeStart = testSizeStart + steps
+    return bestModel
+
+def modelTypeComparer(x,y, models, modelSelect, testSize=0.1, randomState=50):
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=testSize, random_state=randomState)
+    for name, model in models.items():
+        model.fit(x_train, y_train)
+        y_pred = model.predict(x_test)
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        modelSelect = modelScoreComparer(name, mse, r2, testSize, modelSelect, model)
+    return modelSelect
+
+scoreModelInfos = modelSelector(dataX, scoreClasses, models, randomState=300, testSizeStart = 0.1, testSizeEnd = 1, steps = 0.05)
+scoreModel = scoreModelInfos["model"]
+
+categoryModelInfos = modelSelector(dataX, categoryClasses, models, randomState=320, testSizeStart = 0.1, testSizeEnd = 1, steps = 0.05)
+categoryModel = categoryModelInfos["model"]
+
+
+#save the model
+import pickle
+
+# save the classifier
+with open('score-model.pkl', 'wb') as fid:
+    pickle.dump(scoreModel, fid)
+    print(f'The following Model has been uploaded: {scoreModelInfos}')
+
+with open('category-model.pkl', 'wb') as fid:
+    pickle.dump(categoryModel, fid)
+    print(f'The following Model has been uploaded: {categoryModelInfos}')
+
+exit()
+
+#define K
 roundedRoot = round(pow(len(cleanStations), 0.5))
 k = roundedRoot if roundedRoot % 2 == 0 else roundedRoot - 1
 
-data = list(zip(lat, lng))
+
 scoreKNN = KNeighborsClassifier(k)
 
 scoreKNN.fit(data, scoreClasses)
@@ -76,21 +168,7 @@ scorePrediction = scoreKNN.predict(new_point)
 print(f'https://api.waqi.info/feed/geo:{new_lat};{new_lng}/?token=<your_token>')
 print(scorePrediction)
 
-def categorize(x):
-    #classes according to https://waqi.info/
-    categories = {
-        "good" : 50,
-        "moderate" : 100,
-        "unhealthy-for-sensitve-groups" : 150,
-        "unhealthy" : 200,
-        "very-unhealthy" : 300
-    }
-    for key, category in categories.items():
-        if int(x) <= category:
-            return key
-    return "hazordous"
 
-categoryClasses = list(map(categorize, scoreClasses))
 categoryKNN = KNeighborsClassifier(k)
 categoryKNN.fit(data, categoryClasses)
 categoryPrediction = categoryKNN.predict(new_point)

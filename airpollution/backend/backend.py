@@ -74,8 +74,24 @@ def getModelByContainerName(containerName):
 
 #get models
 #better to create the models beforehand, instead of creating them with every request
-categoryModel = getModelByContainerName("category-knn")
-scoreModel = getModelByContainerName("score-knn")
+categoryModel = getModelByContainerName("category-model")
+scoreModel = getModelByContainerName("score-model")
+
+def categorize(x): 
+    #classes according to https://waqi.info/
+    categories = {
+        "good" : 50,
+        "moderate" : 100,
+        "unhealthy-for-sensitve-groups" : 150,
+        "unhealthy" : 200,
+        "very-unhealthy" : 300
+    }
+    #chose first occuring category
+    for key, category in categories.items():
+        print(category)
+        if x <= category:
+            return key
+    return "hazardous"
 
 print("*** Init Flask App ***")
 app = Flask(__name__, static_url_path='/', static_folder='../frontend')
@@ -99,11 +115,19 @@ def predict():
     newPoint = [(lat, lng)]
     
     categoryPrediction = categoryModel.predict(newPoint)
-    scorePrediction = scoreModel.predict(newPoint)
+    categoryReturnValue = ""
+    #if categories are represented as numbers, change to corresponding category string
+    if type(categoryPrediction[0]) != str:
+        categoryReturnValue = categorize(float(categoryPrediction[0]))
+    else:
+        categoryReturnValue = categoryPrediction[0]
 
+    #scores are represnted by the flaot type. however the original data uses ints. So we round to make the output consistent
+    scorePrediction = scoreModel.predict(newPoint)
+    scoreReturnValue = round(scorePrediction[0])
     return jsonify({
-        'category': categoryPrediction[0],
-        'score': scorePrediction[0],
+        'category': categoryReturnValue,
+        'score': scoreReturnValue,
         'lat' : lat,
         'lng' : lng
     })
